@@ -7,6 +7,8 @@ import os
 async def archive(request):
     archive_hash = request.match_info['archive_hash']
     files_path = os.path.join('test_photos', archive_hash)
+    if not os.path.exists(files_path):
+        raise web.HTTPNotFound(text='Архив не существует или был удален')
     archive = await asyncio.create_subprocess_exec(
         'zip', '-r', '-', '.',
         stdout=asyncio.subprocess.PIPE,
