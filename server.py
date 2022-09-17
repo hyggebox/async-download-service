@@ -23,8 +23,8 @@ async def archive(request):
     await response.prepare(request)
 
     while not archive.stdout.at_eof():
-        archive_piece = await archive.stdout.read(n=500*1024)
-        await response.write(archive_piece)
+        chunk = await archive.stdout.read(n=500*1024)
+        await response.write(chunk)
 
     return response
 
