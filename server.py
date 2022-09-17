@@ -6,12 +6,12 @@ import os
 
 async def archive(request):
     archive_hash = request.match_info['archive_hash']
-    dir_name = os.path.join('test_photos', archive_hash)
+    files_path = os.path.join('test_photos', archive_hash)
     archive = await asyncio.create_subprocess_exec(
         'zip', '-r', '-', '.',
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
-        cwd=dir_name
+        cwd=files_path
     )
 
     response = web.StreamResponse()
