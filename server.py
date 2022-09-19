@@ -5,12 +5,15 @@ import logging
 import os
 
 
+DEBUG_MODE = True
+
+
 async def archive(request):
     archive_hash = request.match_info['archive_hash']
     files_path = os.path.join('test_photos', archive_hash)
     if not os.path.exists(files_path):
         raise web.HTTPNotFound(text='Архив не существует или был удален')
-    archive = await asyncio.create_subprocess_exec(
+    loading_process = await asyncio.create_subprocess_exec(
         'zip', '-r', '-', '.',
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
@@ -23,11 +26,21 @@ async def archive(request):
 
     await response.prepare(request)
 
-    while not archive.stdout.at_eof():
-        chunk = await archive.stdout.read(n=500*1024)
-        logging.info('Sending archive chunk ...')
-        await response.write(chunk)
+    try:
+        while not loading_process.stdout.at_eof():
+            chunk = await loading_process.stdout.read(n=500*1024)
+            logging.info('Sending archive chunk ...')
+            await response.write(chunk)
+            if DEBUG_MODE:
+                await asyncio.sleep(3)
 
+    except asyncio.CancelledError:
+        logging.info('Download was interrupted')
+        raise
+
+    finally:
+        loading_process.kill()
+        await loading_process.communicate()
     return response
 
 
