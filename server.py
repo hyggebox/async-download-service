@@ -1,3 +1,4 @@
+import argparse
 import asyncio
 from aiohttp import web
 import aiofiles
@@ -5,12 +6,9 @@ import logging
 import os
 
 
-DEBUG_MODE = True
-
-
 async def archive(request):
     archive_hash = request.match_info['archive_hash']
-    files_path = os.path.join('test_photos', archive_hash)
+    files_path = os.path.join(photos_dir_path, archive_hash)
     if not os.path.exists(files_path):
         raise web.HTTPNotFound(text='Архив не существует или был удален')
     loading_process = await asyncio.create_subprocess_exec(
@@ -31,8 +29,8 @@ async def archive(request):
             chunk = await loading_process.stdout.read(n=500*1024)
             logging.info('Sending archive chunk ...')
             await response.write(chunk)
-            if DEBUG_MODE:
-                await asyncio.sleep(3)
+            if args.delay:
+                await asyncio.sleep(args.delay)
 
     except asyncio.CancelledError:
         logging.info('Download was interrupted')
@@ -51,7 +49,17 @@ async def handle_index_page(request):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--logging', '-l', action='store_true',
+                        help='Turns on logging')
+    parser.add_argument('--delay', '-d', type=int,
+                        help='Turns on response delay in seconds specified')
+    args = parser.parse_args()
+
+    photos_dir_path = os.getenv('PHOTOS_DIR', default='test_photos')
+
+    if args.logging:
+        logging.basicConfig(level=logging.INFO)
 
     app = web.Application()
     app.add_routes([
