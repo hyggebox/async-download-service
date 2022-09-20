@@ -1,0 +1,10 @@
+version: "3"
+
+services:
+  app:
+    build: ./
+    environment:
+      PHOTOS_DIR: ${PHOTOS_DIR-test_photos}
+    command: python3 server.py -l
+    ports:
+      - 8080:8080
