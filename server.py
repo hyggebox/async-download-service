@@ -50,10 +50,16 @@ async def handle_index_page(request):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--logging', '-l', action='store_true',
-                        help='Turns on logging')
-    parser.add_argument('--delay', '-d', type=int,
-                        help='Turns on response delay in seconds specified')
+    parser.add_argument(
+        '--logging', '-l',
+        action='store_true',
+        help='Turns on logging'
+    )
+    parser.add_argument(
+        '--delay', '-d',
+        type=int,
+        help='Turns on response delay in seconds specified'
+    )
     args = parser.parse_args()
 
     photos_dir_path = os.getenv('PHOTOS_DIR', default='test_photos')
