@@ -24,9 +24,12 @@ async def archive(request):
 
     await response.prepare(request)
 
+    chunk_size_mb = 500
+    chunk_size = chunk_size_mb * 1024
+
     try:
         while not process.stdout.at_eof():
-            chunk = await process.stdout.read(n=500*1024)
+            chunk = await process.stdout.read(n=chunk_size)
             logging.info('Sending archive chunk ...')
             await response.write(chunk)
             if args.delay:
