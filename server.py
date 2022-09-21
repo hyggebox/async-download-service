@@ -11,7 +11,7 @@ async def archive(request):
     files_path = os.path.join(photos_dir_path, archive_hash)
     if not os.path.exists(files_path):
         raise web.HTTPNotFound(text='Архив не существует или был удален')
-    loading_process = await asyncio.create_subprocess_exec(
+    process = await asyncio.create_subprocess_exec(
         'zip', '-r', '-', '.',
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
@@ -25,8 +25,8 @@ async def archive(request):
     await response.prepare(request)
 
     try:
-        while not loading_process.stdout.at_eof():
-            chunk = await loading_process.stdout.read(n=500*1024)
+        while not process.stdout.at_eof():
+            chunk = await process.stdout.read(n=500*1024)
             logging.info('Sending archive chunk ...')
             await response.write(chunk)
             if args.delay:
@@ -37,8 +37,8 @@ async def archive(request):
         raise
 
     finally:
-        loading_process.kill()
-        await loading_process.communicate()
+        process.kill()
+        await process.communicate()
     return response
 
 
