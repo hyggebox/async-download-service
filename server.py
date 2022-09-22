@@ -1,9 +1,10 @@
+import aiofiles
 import argparse
 import asyncio
-from aiohttp import web
-import aiofiles
 import logging
 import os
+
+from aiohttp import web
 
 
 async def archive(request):
@@ -32,7 +33,7 @@ async def archive(request):
             chunk = await process.stdout.read(n=chunk_size)
             logging.info('Sending archive chunk ...')
             await response.write(chunk)
-            if args.delay:
+            if request.app['delay']:
                 await asyncio.sleep(args.delay)
 
     except asyncio.CancelledError:
@@ -62,6 +63,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--delay', '-d',
         type=int,
+        default=0,
         help='Turns on response delay in seconds specified'
     )
     args = parser.parse_args()
@@ -72,6 +74,7 @@ if __name__ == '__main__':
         logging.basicConfig(level=logging.INFO)
 
     app = web.Application()
+    app['delay'] = args.delay
     app.add_routes([
         web.get('/', handle_index_page),
         web.get('/archive/{archive_hash}/', archive),
