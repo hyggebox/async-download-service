@@ -41,7 +41,7 @@ async def archive(request):
         raise
 
     finally:
-        if process.returncode:
+        if process.returncode is None:
             process.kill()
             await process.communicate()
     return response
