@@ -25,8 +25,7 @@ async def archive(request):
 
     await response.prepare(request)
 
-    chunk_size_kb = 500
-    chunk_size = chunk_size_kb * 1024
+    chunk_size = 500 * 1024  # chunk size in bytes
 
     try:
         while not process.stdout.at_eof():
